@@ -3,9 +3,12 @@ package xdb
 import (
 	"time"
 
+	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
+
+var log *zap.SugaredLogger
 
 // Config 数据库配置，可以被主配置直接引用
 type Config struct {
@@ -17,10 +20,19 @@ type Config struct {
 	Lifetime int `default:"3000"`
 }
 
+func SetLogger(logger *zap.SugaredLogger) {
+	log = logger
+}
+
 // New 用配置生成一个 gorm mysql 数据库对象,若目标数据库未启动会一直等待
 func New(config Config) *gorm.DB {
 	var db *gorm.DB
 	var err error
+
+	if log == nil {
+		logger, _ := zap.NewDevelopment()
+		log = logger.Sugar()
+	}
 
 	if config.Name == "" {
 		panic("missing db name config")
@@ -32,7 +44,7 @@ func New(config Config) *gorm.DB {
 	for {
 		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 		if err != nil {
-			// log.WithError(err).Warn("waiting for connect to db")
+			log.Warnw("waiting for connect to db", "origin", err.Error())
 			time.Sleep(time.Second * 2)
 			continue
 		}
@@ -41,7 +53,7 @@ func New(config Config) *gorm.DB {
 			panic("can not get db conn from gorm client")
 		}
 		conn.SetConnMaxLifetime(time.Duration(config.Lifetime) * time.Second)
-		// log.Info("Mysql connect successful.")
+		log.Info("Mysql connect successful.")
 		break
 	}
 
