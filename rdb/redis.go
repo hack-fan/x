@@ -25,6 +25,11 @@ func New(config Config) *redis.Client {
 		DB:       config.DB,
 	})
 
+	if log == nil {
+		logger, _ := zap.NewDevelopment()
+		log = logger.Sugar()
+	}
+
 	// TODO: ping redis
 
 	log.Info("Redis connect successful.")
