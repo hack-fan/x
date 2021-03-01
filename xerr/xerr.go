@@ -82,3 +82,15 @@ func ErrorHandler(err error, c echo.Context) {
 		}
 	}
 }
+
+// Is err the instance of Error,and has key?
+func Is(err error, key string) bool {
+	src, ok := err.(*Error)
+	if !ok {
+		return false
+	}
+	if src.Key == key {
+		return true
+	}
+	return false
+}
