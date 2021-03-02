@@ -1,6 +1,7 @@
 package xerr
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -57,7 +58,7 @@ func ErrorHandler(err error, c echo.Context) {
 		code = ee.Code
 		key = http.StatusText(code)
 		msg = fmt.Sprintf("%v", ee.Message)
-	} else if err == gorm.ErrRecordNotFound {
+	} else if errors.Is(err, gorm.ErrRecordNotFound) {
 		// gorm not found
 		code = http.StatusNotFound
 		key = "NotFound"
