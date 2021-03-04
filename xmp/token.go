@@ -3,6 +3,7 @@ package xmp
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -61,6 +62,8 @@ func (s *accessTokenServer) RefreshToken(current string) (token string, err erro
 type accessToken struct {
 	Token     string `json:"access_token"`
 	ExpiresIn int64  `json:"expires_in"`
+	ErrorCode int    `json:"errcode"`
+	ErrorMsg  string `json:"errmsg"`
 }
 
 // updateToken 从微信服务器获取新的 access_token 并存入缓存, 同时返回该 access_token.
@@ -82,6 +85,10 @@ func (s *accessTokenServer) requestToken() (string, error) {
 	err = json.Unmarshal(resp.Body(), at)
 	if err != nil {
 		return "", err
+	}
+	// check mp error
+	if at.ErrorCode != 0 {
+		return "", errors.New(at.ErrorMsg)
 	}
 	// set to redis
 	err = s.rdb.Set(s.ctx, s.key, at.Token, time.Second*time.Duration(at.ExpiresIn)).Err()
