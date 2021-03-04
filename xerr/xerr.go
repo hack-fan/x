@@ -84,13 +84,25 @@ func ErrorHandler(err error, c echo.Context) {
 	}
 }
 
-// Is err the instance of Error,and has key?
+// Is err the instance of Error,and has <key>?
 func Is(err error, key string) bool {
 	src, ok := err.(*Error)
 	if !ok {
 		return false
 	}
 	if src.Key == key {
+		return true
+	}
+	return false
+}
+
+// IsCode check if the status code is <code>
+func IsCode(err error, code int) bool {
+	src, ok := err.(*Error)
+	if !ok {
+		return false
+	}
+	if src.code == code {
 		return true
 	}
 	return false
