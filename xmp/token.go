@@ -6,20 +6,18 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/go-resty/resty/v2"
 	"go.uber.org/zap"
 )
 
-func accessTokenCacheKey(appID string) string {
-	return "mp:access-token:" + appID
-}
-
 // accessTokenServer 实现了 AccessTokenServer 接口.
 type accessTokenServer struct {
 	appID  string
 	secret string
+	key    string
 	rest   *resty.Client
 	rdb    *redis.Client
 	log    *zap.SugaredLogger
@@ -31,6 +29,7 @@ func newAccessTokenServer(appID, secret string, rdb *redis.Client, rest *resty.C
 	return &accessTokenServer{
 		appID:  url.QueryEscape(appID),
 		secret: url.QueryEscape(secret),
+		key:    "mp:token:" + appID,
 		rest:   rest,
 		rdb:    rdb,
 		log:    log,
@@ -43,7 +42,7 @@ func (s *accessTokenServer) IID01332E16DF5011E5A9D5A4DB30FED8E1() {}
 
 // Token 从缓存或微信服务器获得token
 func (s *accessTokenServer) Token() (string, error) {
-	token, err := s.rdb.Get(s.ctx, accessTokenCacheKey(s.appID)).Result()
+	token, err := s.rdb.Get(s.ctx, s.key).Result()
 	if err == redis.Nil {
 		return s.requestToken()
 
@@ -85,6 +84,10 @@ func (s *accessTokenServer) requestToken() (string, error) {
 		return "", err
 	}
 	// set to redis
+	err = s.rdb.Set(s.ctx, s.key, at.Token, time.Second*time.Duration(at.ExpiresIn)).Err()
+	if err != nil {
+		return "", err
+	}
 
 	return at.Token, nil
 }
