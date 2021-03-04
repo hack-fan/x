@@ -96,6 +96,10 @@ func (s *accessTokenServer) requestToken() (string, error) {
 	if at.ErrorCode != 0 {
 		return "", errors.New(at.ErrorMsg)
 	}
+	// last check
+	if at.Token == "" || at.ExpiresIn == 0 {
+		return "", errors.New("get mp token unknown error")
+	}
 	// set to redis
 	err = s.rdb.Set(s.ctx, s.key, at.Token, time.Second*time.Duration(at.ExpiresIn)).Err()
 	if err != nil {
