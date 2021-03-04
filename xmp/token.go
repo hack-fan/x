@@ -81,8 +81,10 @@ func (s *accessTokenServer) requestToken() (string, error) {
 		return "", fmt.Errorf("get mp token error:%s", resp.Status())
 	}
 	// parse
+	body := resp.Body()
+	s.log.Infof("mp token body: %s", string(body))
 	at := new(accessToken)
-	err = json.Unmarshal(resp.Body(), at)
+	err = json.Unmarshal(body, at)
 	if err != nil {
 		return "", err
 	}
