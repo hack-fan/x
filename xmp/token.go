@@ -45,9 +45,13 @@ func (s *accessTokenServer) IID01332E16DF5011E5A9D5A4DB30FED8E1() {}
 func (s *accessTokenServer) Token() (string, error) {
 	token, err := s.rdb.Get(s.ctx, s.key).Result()
 	if err == redis.Nil {
-		return s.requestToken()
-
+		// 自己再捕获一次错误打印出来，mp包不靠谱不打
+		token, err = s.requestToken()
+		if err != nil {
+			s.log.Errorf("mp token server error: %s", err)
+		}
 	} else if err != nil {
+		s.log.Errorf("mp token server redis error:%s", err)
 		return "", err
 	}
 	return token, nil
