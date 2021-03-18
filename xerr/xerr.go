@@ -3,7 +3,9 @@ package xerr
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"gorm.io/gorm"
@@ -31,6 +33,41 @@ func Newf(code int, key string, format string, a ...interface{}) *Error {
 		code:    code,
 		Key:     key,
 		Message: fmt.Sprintf(format, a...),
+	}
+}
+
+// ParseResp can parse http response, if there is a error, it would read and close the body for error messages.
+func ParseResp(resp *http.Response) *Error {
+	if resp == nil {
+		return &Error{
+			code:    500,
+			Key:     "ServerError",
+			Message: "xerr can not parse a nil http response",
+		}
+	}
+	if resp.StatusCode < 400 {
+		return nil
+	}
+	var msg string
+	defer resp.Body.Close()
+	if strings.HasPrefix(resp.Header.Get("Content-Length"), "text") {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return &Error{
+				code:    500,
+				Key:     "ServerError",
+				Message: fmt.Sprintf("xerr parse response failed: %s", err),
+			}
+		}
+		msg = string(body)
+		if len(body) > 1000 {
+			msg = msg[:1000]
+		}
+	}
+	return &Error{
+		code:    resp.StatusCode,
+		Key:     strings.ReplaceAll(http.StatusText(resp.StatusCode), " ", ""),
+		Message: msg,
 	}
 }
 
