@@ -74,7 +74,7 @@ func (c *cosClient) Get(key string) ([]byte, error) {
 	return file, nil
 }
 
-// Put raw put the raw data without any meta, you can only use it by api.
+// PutRaw put the raw data without any meta, you can only use it by api.
 func (c *cosClient) PutRaw(r io.Reader, key string) error {
 	return c.Put(r, key, "", "")
 }
@@ -127,4 +127,8 @@ func (c *cosClient) Exists(key string) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (c *cosClient) IsNotFoundError(err error) bool {
+	return cos.IsNotFoundError(err)
 }

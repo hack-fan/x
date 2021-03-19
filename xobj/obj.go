@@ -33,9 +33,12 @@ type Client interface {
 	Exists(key string) (bool, error)
 	// please close reader yourself, key is required, default content type is application/octet-stream
 	Put(r io.Reader, key, name, contentType string) error
+	// PutRaw put the raw data without any meta, you can only use it by api.
 	PutRaw(r io.Reader, key string) error
 	// delete
 	Delete(key string) error
+	// check not found err
+	IsNotFoundError(err error) bool
 }
 
 // New create a client
