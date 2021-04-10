@@ -76,6 +76,11 @@ func (e *Error) Error() string {
 	return e.Key + ": " + e.Message
 }
 
+// StatusCode is http status code
+func (e *Error) StatusCode() int {
+	return e.code
+}
+
 // ErrorHandler customize echo's HTTP error handler.
 func ErrorHandler(err error, c echo.Context) {
 	var (
