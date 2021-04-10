@@ -37,6 +37,12 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 			resp = xerr.New(500, "ServerError", msg)
 		}
 
+		// log hook only show the message field, so write err as message
+		// only report server error
+		if resp.StatusCode() >= 500 {
+			logger.Error(err.Error())
+		}
+
 		// echo need this
 		if !c.Response().Committed {
 			if c.Request().Method == echo.HEAD {
@@ -45,7 +51,7 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 				err = c.JSON(resp.StatusCode(), resp)
 			}
 			if err != nil {
-				// log hook only show the message field, so write err as message
+				// log the resp sent error
 				logger.Error(err.Error())
 			}
 		}
