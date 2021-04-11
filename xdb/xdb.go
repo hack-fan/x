@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"moul.io/zapgorm2"
+	"gorm.io/gorm/logger"
 )
 
 var log *zap.SugaredLogger
@@ -31,8 +31,8 @@ func New(config Config) *gorm.DB {
 	var err error
 
 	if log == nil {
-		logger, _ := zap.NewDevelopment()
-		log = logger.Sugar()
+		zLogger, _ := zap.NewDevelopment()
+		log = zLogger.Sugar()
 	}
 
 	if config.Name == "" {
@@ -44,7 +44,15 @@ func New(config Config) *gorm.DB {
 		"?charset=utf8mb4&parseTime=True&loc=Local&timeout=90s"
 	for {
 		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
-			Logger: zapgorm2.New(log.Desugar()),
+			Logger: logger.New(
+				zap.NewStdLog(log.Desugar()), // io writer
+				logger.Config{
+					SlowThreshold:             time.Second * 3, // Slow SQL threshold
+					LogLevel:                  logger.Warn,     // Log level
+					IgnoreRecordNotFoundError: true,            // Ignore ErrRecordNotFound error for logger
+					Colorful:                  false,           // Disable color
+				},
+			),
 		})
 		if err != nil {
 			log.Warnw("waiting for connect to db", "origin", err.Error())
