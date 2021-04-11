@@ -32,9 +32,9 @@ func NewSkipper(rules []SkipRule) Skipper {
 	}
 }
 
-// ZapLogger use zap as request logger
+// ZapLoggerWithSkipper use zap as request logger
 // thank https://github.com/brpaz/echozap
-func ZapLogger(log *zap.Logger, skipper Skipper) echo.MiddlewareFunc {
+func ZapLoggerWithSkipper(log *zap.Logger, skipper Skipper) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			start := time.Now()
@@ -85,4 +85,9 @@ func ZapLogger(log *zap.Logger, skipper Skipper) echo.MiddlewareFunc {
 			return nil
 		}
 	}
+}
+
+// ZapLogger use zap for echo logger
+func ZapLogger(log *zap.Logger) echo.MiddlewareFunc {
+	return ZapLoggerWithSkipper(log, nil)
 }
