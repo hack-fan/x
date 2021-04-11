@@ -6,6 +6,7 @@ import (
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"moul.io/zapgorm2"
 )
 
 var log *zap.SugaredLogger
@@ -42,7 +43,9 @@ func New(config Config) *gorm.DB {
 		"@tcp(" + config.Host + ":" + config.Port + ")/" + config.Name +
 		"?charset=utf8mb4&parseTime=True&loc=Local&timeout=90s"
 	for {
-		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+			Logger: zapgorm2.New(log.Desugar()),
+		})
 		if err != nil {
 			log.Warnw("waiting for connect to db", "origin", err.Error())
 			time.Sleep(time.Second * 2)
