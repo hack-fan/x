@@ -5,29 +5,36 @@ import (
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
-// LoggerSkipper skip the heartbeat /status log
-func LoggerSkipper(c echo.Context) bool {
-	if c.Path() == "/status" {
-		return true
-	}
-	return false
+type Skipper func(ctx echo.Context) bool
+
+// SkipRule must be fully equal
+type SkipRule struct {
+	Method     string
+	Path       string
+	StatusCode int
 }
 
-// LoggerMid skip /status endpoint, will be deprecated.
-func LoggerMid() echo.MiddlewareFunc {
-	return middleware.LoggerWithConfig(middleware.LoggerConfig{
-		Skipper: LoggerSkipper,
-	})
+// NewSkipper gen a logger skipper
+func NewSkipper(rules []SkipRule) Skipper {
+	return func(c echo.Context) bool {
+		for _, rule := range rules {
+			if c.Request().Method == rule.Method &&
+				c.Path() == rule.Path &&
+				c.Response().Status == rule.StatusCode {
+				return true
+			}
+		}
+		return false
+	}
 }
 
 // ZapLogger use zap as request logger
 // thank https://github.com/brpaz/echozap
-func ZapLogger(log *zap.Logger) echo.MiddlewareFunc {
+func ZapLogger(log *zap.Logger, skipper Skipper) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			start := time.Now()
@@ -37,8 +44,8 @@ func ZapLogger(log *zap.Logger) echo.MiddlewareFunc {
 				c.Error(err)
 			}
 
-			// skip heartbeat request
-			if c.Path() == "/status" {
+			// skip log
+			if skipper != nil && skipper(c) {
 				return nil
 			}
 
