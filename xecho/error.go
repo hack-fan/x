@@ -26,7 +26,8 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 			if ee.Code == 401 && ee.Message == "invalid key" {
 				// hack echo key auth middleware
 				// if there is a error, must be server error
-				resp = xerr.New(500, "ServerError", ee.Internal.Error())
+				logger.Error(ee.Internal.Error())
+				resp = xerr.ServerError
 			} else {
 				resp = xerr.New(ee.Code, strings.ReplaceAll(http.StatusText(ee.Code), " ", ""),
 					fmt.Sprintf("%v", ee.Message))
@@ -35,18 +36,9 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 			// gorm not found
 			resp = xerr.New(404, "NotFound", "record not found")
 		} else {
-			// server errors output
-			msg := ""
-			if c.Echo().Debug {
-				msg = err.Error()
-			}
-			resp = xerr.New(500, "ServerError", msg)
-		}
-
-		// log hook only show the message field, so write err as message
-		// only report server error
-		if resp.StatusCode() >= 500 {
+			// log hook only show the message field, so write err as message
 			logger.Error(err.Error())
+			resp = xerr.ServerError
 		}
 
 		// echo need this

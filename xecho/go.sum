@@ -6,8 +6,8 @@ github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/dgrijalva/jwt-go v3.2.0+incompatible h1:7qlOGliEKZXTDg6OTjfoBKDXWrumCAMpl/TFQ4/5kLM=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm40UhjYkI=
-github.com/hack-fan/x/xerr v0.0.0-20210410100800-4447a39322ed h1:fxCyl+QZEtzSNeyLSepO+hJ95iCR3XURBmDv6ngFfZc=
-github.com/hack-fan/x/xerr v0.0.0-20210410100800-4447a39322ed/go.mod h1:7oTyHzyt5nt3BpbbbWmUZ6lTVT8DXXR5uUxyCpundaQ=
+github.com/hack-fan/x/xerr v0.0.0-20210412085731-58cda7dda418 h1:sVYThtXitk7J/Zmm8UVM85WKc7aiwmqh/M3b8R017ug=
+github.com/hack-fan/x/xerr v0.0.0-20210412085731-58cda7dda418/go.mod h1:7oTyHzyt5nt3BpbbbWmUZ6lTVT8DXXR5uUxyCpundaQ=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.1/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=

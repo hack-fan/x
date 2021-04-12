@@ -3,7 +3,7 @@ module github.com/hack-fan/x/xecho
 go 1.16
 
 require (
-	github.com/hack-fan/x/xerr v0.0.0-20210410100800-4447a39322ed
+	github.com/hack-fan/x/xerr v0.0.0-20210412085731-58cda7dda418
 	github.com/labstack/echo/v4 v4.2.2
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
