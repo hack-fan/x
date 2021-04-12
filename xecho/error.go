@@ -23,8 +23,14 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 			resp = he
 		} else if ee, ok := err.(*echo.HTTPError); ok {
 			// echo errors
-			resp = xerr.New(ee.Code, strings.ReplaceAll(http.StatusText(ee.Code), " ", ""),
-				fmt.Sprintf("%v", ee.Message))
+			if ee.Code == 401 && ee.Message == "invalid key" {
+				// hack echo key auth middleware
+				// if there is a error, must be server error
+				resp = xerr.New(500, "ServerError", ee.Internal.Error())
+			} else {
+				resp = xerr.New(ee.Code, strings.ReplaceAll(http.StatusText(ee.Code), " ", ""),
+					fmt.Sprintf("%v", ee.Message))
+			}
 		} else if errors.Is(err, gorm.ErrRecordNotFound) {
 			// gorm not found
 			resp = xerr.New(404, "NotFound", "record not found")
