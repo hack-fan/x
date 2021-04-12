@@ -11,6 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// ServerError always the same
+var ServerError = New(500, "ServerError",
+	"There was a little problem on the server side, please report it to us or try again later.")
+
 // Error custom struct
 type Error struct {
 	code    int
