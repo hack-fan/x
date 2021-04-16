@@ -30,6 +30,9 @@ type MsgText struct {
 
 // SendRobotMsg send robot message by wechat work web api
 func (s WeworkSender) SendRobotMsg(key, content string) error {
+	if key == "" {
+		return nil
+	}
 	msg, err := json.Marshal(&RobotMsg{
 		MsgType: "text",
 		Text:    MsgText{content},
