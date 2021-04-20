@@ -77,7 +77,7 @@ func ParseResp(resp *http.Response) *Error {
 
 // Error makes it compatible with `error` interface.
 func (e *Error) Error() string {
-	return e.Key + ": " + e.Message
+	return e.Message
 }
 
 // StatusCode is http status code

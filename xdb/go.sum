@@ -76,5 +76,7 @@ gorm.io/gorm v1.21.7 h1:MuY8oejVL5l3iT7PfE3z5I4J+KW/Nu2w/uTpLe3vV1Q=
 gorm.io/gorm v1.21.7/go.mod h1:F+OptMscr0P2F2qU97WT1WimdH9GaQPoDW7AYd5i2Y0=
 gorm.io/gorm v1.21.8-0.20210409034324-d278ca49ef30 h1:x+aQLJdBYg+SGv8CKVzYcRyhx220xzRDha09DZw82ro=
 gorm.io/gorm v1.21.8-0.20210409034324-d278ca49ef30/go.mod h1:F+OptMscr0P2F2qU97WT1WimdH9GaQPoDW7AYd5i2Y0=
+gorm.io/gorm v1.21.8 h1:2CEwZSzogdhsKPlJ9OvBKTdlWIpELXb6HbfLfMNhSYI=
+gorm.io/gorm v1.21.8/go.mod h1:F+OptMscr0P2F2qU97WT1WimdH9GaQPoDW7AYd5i2Y0=
 honnef.co/go/tools v0.0.1-2019.2.3 h1:3JgtbtFHMiCmsznwGVTUWbgGov+pVqnlf1dEJTNAXeM=
 honnef.co/go/tools v0.0.1-2019.2.3/go.mod h1:a3bituU0lyd329TUQxRnasdCoJDkEUEAqEt0JzvZhAg=
