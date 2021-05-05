@@ -22,7 +22,7 @@ type Config struct {
 // NewClient mp client
 func NewClient(rdb *redis.Client, rest *resty.Client, log *zap.SugaredLogger, config Config) *core.Client {
 	return core.NewClient(newAccessTokenServer(config.AppID, config.Secret, rdb, rest, log),
-		&http.Client{Timeout: 3 * time.Second})
+		&http.Client{Timeout: 30 * time.Second})
 }
 
 // NewServer mp server
