@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/chanxuehong/wechat/mp/core"
 	"github.com/go-redis/redis/v8"
 	"github.com/go-resty/resty/v2"
+	"github.com/hyacinthus/wechat/mp/core"
 	"go.uber.org/zap"
 )
 
