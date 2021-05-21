@@ -131,6 +131,25 @@ func (t Numbers) Contains(s int) bool {
 	return false
 }
 
+// SAdd add as set
+func (t Numbers) SAdd(s int) Numbers {
+	if t.Contains(s) {
+		return t
+	}
+	return append(t, s)
+}
+
+// Remove item which value is s
+func (t Numbers) Remove(s int) Numbers {
+	tmp := make(Numbers, 0, len(t))
+	for _, tt := range t {
+		if tt != s {
+			tmp = append(tmp, tt)
+		}
+	}
+	return tmp
+}
+
 func (t Numbers) MarshalJSON() ([]byte, error) {
 	if t == nil {
 		return []byte("[]"), nil
