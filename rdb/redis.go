@@ -1,6 +1,9 @@
 package rdb
 
 import (
+	"context"
+	"time"
+
 	"github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
 )
@@ -30,9 +33,20 @@ func New(config Config) *redis.Client {
 		log = logger.Sugar()
 	}
 
-	// TODO: ping redis
+	var i int
+	for {
+		err := kv.Ping(context.Background()).Err()
+		if err != nil {
+			if i >= 60 {
+				panic("connect to redis failed")
+			}
+			time.Sleep(time.Second)
+			continue
+		}
+		break
+	}
 
-	log.Info("Redis connect successful.")
+	log.Info("redis connect successful")
 
 	return kv
 }
