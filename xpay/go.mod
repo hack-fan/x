@@ -6,6 +6,6 @@ require (
 	github.com/hyacinthus/wechat v0.0.0-20210514030506-368540a18732
 	github.com/labstack/echo/v4 v4.3.0
 	golang.org/x/crypto v0.0.0-20210513164829-c07d793c2f9a // indirect
-	golang.org/x/net v0.0.0-20210520170846-37e1c6afe023 // indirect
-	golang.org/x/sys v0.0.0-20210521090106-6ca3eb03dfc2 // indirect
+	golang.org/x/net v0.0.0-20210521195947-fe42d452be8f // indirect
+	golang.org/x/sys v0.0.0-20210521203332-0cec03c779c1 // indirect
 )

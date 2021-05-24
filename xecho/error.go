@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/hack-fan/x/xerr"
 	"github.com/labstack/echo/v4"
 	"go.uber.org/zap"
@@ -21,6 +22,8 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 		if he, ok := err.(*xerr.Error); ok {
 			// custom error by this package
 			resp = he
+		} else if ve, ok := err.(validator.ValidationErrors); ok {
+			resp = xerr.New(400, "BadRequest", ve.Error())
 		} else if ee, ok := err.(*echo.HTTPError); ok {
 			// echo errors
 			resp = xerr.New(ee.Code, strings.ReplaceAll(http.StatusText(ee.Code), " ", ""),
