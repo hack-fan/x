@@ -8,7 +8,7 @@ import (
 	"github.com/tencentyun/cos-go-sdk-v5"
 )
 
-// all providers
+// ProviderCOS provider tencent cloud cos
 const (
 	ProviderCOS = "cos"
 )
@@ -23,21 +23,21 @@ type Config struct {
 
 // Client is obj client interface
 type Client interface {
-	// get raw http resp
+	// GetRaw get raw http resp
 	GetRaw(key string) (*http.Response, error)
-	// please close it after use
+	// GetReader please close it after use
 	GetReader(key string) (io.ReadCloser, error)
-	// get file byte content only
+	// Get get file byte content only
 	Get(key string) ([]byte, error)
-	// exists or not
+	// Exists exists or not
 	Exists(key string) (bool, error)
-	// please close reader yourself, key is required, default content type is application/octet-stream
+	// Put please close reader yourself, key is required, default content type is application/octet-stream
 	Put(r io.Reader, key, name, contentType string) error
 	// PutRaw put the raw data without any meta, you can only use it by api.
 	PutRaw(r io.Reader, key string) error
-	// delete
+	// Delete delete
 	Delete(key string) error
-	// check not found err
+	// IsNotFoundError check not found err
 	IsNotFoundError(err error) bool
 }
 
