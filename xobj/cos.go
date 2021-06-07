@@ -18,10 +18,12 @@ type CosConfig struct {
 	SecretID  string
 	SecretKey string
 	Bucket    string
+	Prefix    string
 }
 
 type cosClient struct {
-	c *cos.Client
+	client *cos.Client
+	prefix string
 	// just use bg context for cos api
 	ctx context.Context
 }
@@ -37,8 +39,17 @@ func newCosClient(config CosConfig) *cosClient {
 		},
 	})
 	return &cosClient{
-		c:   c,
-		ctx: context.Background(),
+		client: c,
+		prefix: config.Prefix,
+		ctx:    context.Background(),
+	}
+}
+
+func (c *cosClient) Group(prefix string) Client {
+	return &cosClient{
+		client: c.client,
+		prefix: c.prefix + prefix,
+		ctx:    context.Background(),
 	}
 }
 
@@ -46,7 +57,7 @@ func (c *cosClient) GetRaw(key string) (*http.Response, error) {
 	if key == "" {
 		return nil, ErrorMissingKey
 	}
-	resp, err := c.c.Object.Get(c.ctx, key, nil)
+	resp, err := c.client.Object.Get(c.ctx, c.prefix+key, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +107,7 @@ func (c *cosClient) Put(r io.Reader, key, name, contentType string) error {
 			ContentType:        contentType,
 		},
 	}
-	_, err := c.c.Object.Put(c.ctx, key, r, opt)
+	_, err := c.client.Object.Put(c.ctx, c.prefix+key, r, opt)
 	if err != nil {
 		return err
 	}
@@ -107,7 +118,7 @@ func (c *cosClient) Delete(key string) error {
 	if key == "" {
 		return xerr.New(400, "EmptyKey", "empty key")
 	}
-	_, err := c.c.Object.Delete(c.ctx, key)
+	_, err := c.client.Object.Delete(c.ctx, c.prefix+key)
 	if err != nil {
 		return err
 	}
@@ -119,7 +130,7 @@ func (c *cosClient) Exists(key string) (bool, error) {
 	if key == "" {
 		return false, ErrorMissingKey
 	}
-	_, err := c.c.Object.Head(c.ctx, key, nil)
+	_, err := c.client.Object.Head(c.ctx, c.prefix+key, nil)
 	if cos.IsNotFoundError(err) {
 		return false, nil
 	}

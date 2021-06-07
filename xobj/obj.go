@@ -23,6 +23,7 @@ type Config struct {
 
 // Client is obj client interface
 type Client interface {
+	Group(prefix string) Client
 	// GetRaw get raw http resp
 	GetRaw(key string) (*http.Response, error)
 	// GetReader please close it after use
