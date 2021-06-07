@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/hack-fan/x/xerr"
 	"github.com/tencentyun/cos-go-sdk-v5"
@@ -37,6 +38,7 @@ func newCosClient(config CosConfig) *cosClient {
 			SecretID:  config.SecretID,
 			SecretKey: config.SecretKey,
 		},
+		Timeout: time.Second * 30,
 	})
 	return &cosClient{
 		client: c,
