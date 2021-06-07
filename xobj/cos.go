@@ -27,7 +27,7 @@ type cosClient struct {
 }
 
 func newCosClient(config CosConfig) *cosClient {
-	u, _ := url.Parse(fmt.Sprintf("http://%s-%s.cos.%s.myqcloud.com",
+	u, _ := url.Parse(fmt.Sprintf("https://%s-%s.cos.%s.myqcloud.com",
 		config.Bucket, config.AppID, config.Region))
 	b := &cos.BaseURL{BucketURL: u}
 	c := cos.NewClient(b, &http.Client{
