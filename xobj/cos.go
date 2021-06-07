@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/hack-fan/x/xerr"
@@ -24,6 +26,7 @@ type CosConfig struct {
 
 type cosClient struct {
 	client *cos.Client
+	httpc  *http.Client
 	prefix string
 	// just use bg context for cos api
 	ctx context.Context
@@ -42,6 +45,7 @@ func newCosClient(config CosConfig) *cosClient {
 	})
 	return &cosClient{
 		client: c,
+		httpc:  &http.Client{Timeout: time.Second * 30},
 		prefix: config.Prefix,
 		ctx:    context.Background(),
 	}
@@ -50,6 +54,7 @@ func newCosClient(config CosConfig) *cosClient {
 func (c *cosClient) Group(prefix string) Client {
 	return &cosClient{
 		client: c.client,
+		httpc:  c.httpc,
 		prefix: c.prefix + prefix,
 		ctx:    context.Background(),
 	}
@@ -90,6 +95,28 @@ func (c *cosClient) Get(key string) ([]byte, error) {
 // PutRaw put the raw data without any meta, you can only use it by api.
 func (c *cosClient) PutRaw(r io.Reader, key string) error {
 	return c.Put(r, key, "", "")
+}
+
+func (c *cosClient) PutURL(src, key string) error {
+	resp, err := c.httpc.Get(src)
+	if err != nil {
+		return fmt.Errorf("get %s failed when put to cos: %w", src, err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 400 {
+		msg, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("get %s failed when put to cos, status: %s, error: %s", src, resp.Status, string(msg))
+	}
+	tp := resp.Header.Get("Content-Type")
+	name := resp.Header.Get("Content-Disposition")
+	t, _, err := mime.ParseMediaType(tp)
+	if err != nil {
+		return fmt.Errorf("parse %s media type failed when put to cos: %w", src, err)
+	}
+	if strings.HasPrefix(t, "text") {
+		return fmt.Errorf("target %s is text, failed to put to cos", src)
+	}
+	return c.Put(resp.Body, key, name, tp)
 }
 
 // Put a file with it's content type and download name from reader
