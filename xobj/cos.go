@@ -64,6 +64,10 @@ func (c *cosClient) Prefix() string {
 	return c.prefix
 }
 
+func (c *cosClient) FullKey(key string) string {
+	return c.prefix + key
+}
+
 func (c *cosClient) GetRaw(key string) (*http.Response, error) {
 	if key == "" {
 		return nil, ErrorMissingKey
