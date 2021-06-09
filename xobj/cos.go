@@ -60,6 +60,10 @@ func (c *cosClient) Group(prefix string) Client {
 	}
 }
 
+func (c *cosClient) Prefix() string {
+	return c.prefix
+}
+
 func (c *cosClient) GetRaw(key string) (*http.Response, error) {
 	if key == "" {
 		return nil, ErrorMissingKey

@@ -23,7 +23,10 @@ type Config struct {
 
 // Client is obj client interface
 type Client interface {
+	// Group can auto add prefix to key
 	Group(prefix string) Client
+	// Prefix show group prefix
+	Prefix() string
 	// GetRaw get raw http resp
 	GetRaw(key string) (*http.Response, error)
 	// GetReader please close it after use
