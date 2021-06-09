@@ -36,6 +36,8 @@ type Client interface {
 	Put(r io.Reader, key, name, contentType string) error
 	// PutRaw put the raw data without any meta, you can only use it by api.
 	PutRaw(r io.Reader, key string) error
+	// PutURL save the src online file to key
+	PutURL(src, key string) error
 	// Delete delete
 	Delete(key string) error
 	// IsNotFoundError check not found err
