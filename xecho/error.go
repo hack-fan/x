@@ -22,10 +22,16 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 		if he, ok := err.(*xerr.Error); ok {
 			// custom error by this package
 			resp = he
+			if resp.StatusCode() >= 500 {
+				logger.Error(resp.Message)
+			}
 		} else if ve, ok := err.(validator.ValidationErrors); ok {
 			resp = xerr.New(400, "BadRequest", ve.Error())
 		} else if ee, ok := err.(*echo.HTTPError); ok {
 			// echo errors
+			if ee.Code >= 500 {
+				logger.Error(ee.Internal.Error())
+			}
 			resp = xerr.New(ee.Code, strings.ReplaceAll(http.StatusText(ee.Code), " ", ""),
 				fmt.Sprintf("%v", ee.Message))
 		} else if errors.Is(err, gorm.ErrRecordNotFound) {
