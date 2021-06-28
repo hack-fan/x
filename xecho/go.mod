@@ -4,10 +4,9 @@ go 1.16
 
 require (
 	github.com/go-playground/validator/v10 v10.6.1
-	github.com/hack-fan/x/xerr v0.0.0-20210609025348-3cae00472ccd
+	github.com/hack-fan/x/xerr v0.0.0-20210626115952-a16f6327cf84
 	github.com/labstack/echo/v4 v4.3.0
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/mattn/go-isatty v0.0.13 // indirect
 	go.uber.org/atomic v1.8.0 // indirect
 	go.uber.org/multierr v1.7.0 // indirect
 	go.uber.org/zap v1.17.0

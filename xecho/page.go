@@ -37,9 +37,9 @@ func (p Paginator) Apply(tx *gorm.DB) *gorm.DB {
 }
 
 // AddHeader to echo resp
-func (p Paginator) AddHeader(c echo.Context, total int) {
+func (p Paginator) AddHeader(c echo.Context, total int64) {
 	p.check()
-	c.Response().Header().Set("X-Total-Count", strconv.Itoa(total))
+	c.Response().Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
 	c.Response().Header().Set("X-Page-Current", strconv.Itoa(p.Page))
 	c.Response().Header().Set("X-Page-Size", strconv.Itoa(p.PageSize))
 }
