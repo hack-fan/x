@@ -41,6 +41,7 @@ func New(config Config) *redis.Client {
 				panic("connect to redis failed")
 			}
 			time.Sleep(time.Second)
+			i += 1
 			continue
 		}
 		break
