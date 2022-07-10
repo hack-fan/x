@@ -36,12 +36,13 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 			// gorm not found
 			resp = xerr.New(404, "NotFound", "record not found")
 		} else {
-			resp = xerr.ServerError
+			resp = xerr.New(500, "ServerError", err.Error())
 		}
 
-		// log hook only show the message field, so write err as message
+		// hide the server error message to client
 		if resp.StatusCode() >= 500 {
 			logger.Error(resp.Message)
+			resp = xerr.ServerError
 		}
 
 		// echo need this
