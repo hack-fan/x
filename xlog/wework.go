@@ -59,11 +59,11 @@ func (s WeworkSender) SendRobotMsg(key, content string) error {
 func (s WeworkSender) Process(entry zapcore.Entry) error {
 	switch entry.Level {
 	case zapcore.DebugLevel:
-		return s.SendRobotMsg(s.DebugKey, entry.Message+"\n\n"+entry.Caller.String())
+		return s.SendRobotMsg(s.DebugKey, entry.Message)
 	case zapcore.WarnLevel:
-		return s.SendRobotMsg(s.WarnKey, entry.Message+"\n\n"+entry.Caller.String())
+		return s.SendRobotMsg(s.WarnKey, entry.Message)
 	case zapcore.ErrorLevel:
-		return s.SendRobotMsg(s.ErrorKey, entry.Message+"\n\n"+entry.Caller.String())
+		return s.SendRobotMsg(s.ErrorKey, entry.Message+"\n\n"+entry.Caller.String()+"\n\n"+entry.Stack)
 	}
 	return nil
 }
