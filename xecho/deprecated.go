@@ -7,10 +7,7 @@ import (
 
 // LoggerSkipper skip the heartbeat /status log
 func LoggerSkipper(c echo.Context) bool {
-	if c.Path() == "/status" {
-		return true
-	}
-	return false
+	return c.Path() == "/status"
 }
 
 // LoggerMid skip /status endpoint, will be deprecated.

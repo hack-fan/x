@@ -5,7 +5,6 @@ import (
 	"net/http"
 
 	"github.com/hack-fan/x/xerr"
-	"github.com/tencentyun/cos-go-sdk-v5"
 )
 
 // ProviderCOS provider tencent cloud cos
@@ -57,15 +56,4 @@ func New(config Config) Client {
 	default:
 		panic("invalid provider")
 	}
-}
-
-func IsNotFoundError(err error) bool {
-	// cos
-	if cos.IsNotFoundError(err) {
-		return true
-	}
-	// others
-
-	// finally
-	return false
 }

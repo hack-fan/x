@@ -3,6 +3,7 @@
 cd rdb
 go mod tidy
 go get -u ./...
+
 )
 (
 cd xdb
