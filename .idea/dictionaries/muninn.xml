@@ -2,6 +2,13 @@
   <dictionary name="muninn">
     <words>
       <w>apiclient</w>
+      <w>pkgs</w>
+      <w>xecho</w>
+      <w>xerr</w>
+      <w>xlog</w>
+      <w>xobj</w>
+      <w>xpay</w>
+      <w>xtype</w>
     </words>
   </dictionary>
 </component>

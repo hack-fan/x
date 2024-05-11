@@ -1,12 +1,15 @@
-lint() {
+
+up() {
     (
         cd $1 || exit 1
-        golangci-lint run
+        go get -u ./...
+        go mod tidy
+        go get ./...
     )
 }
 
 pkgs="rdb xdb xecho xerr xlog xmp xobj xtype xpay"
 
 for pkg in $pkgs; do
-    lint "$pkg"
+    up "$pkg"
 done
