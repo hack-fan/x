@@ -19,19 +19,16 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 		// the final response body
 		var resp *xerr.Error
 
-		if he, ok := err.(*xerr.Error); ok {
-			// custom error by this package
-			resp = he
-		} else if ve, ok := err.(validator.ValidationErrors); ok {
+		var ve validator.ValidationErrors
+		var ee *echo.HTTPError
+		if errors.As(err, &resp) {
+			// find custom error by this package, do nothing
+		} else if errors.As(err, &ve) {
 			resp = xerr.New(400, "BadRequest", ve.Error())
-		} else if ee, ok := err.(*echo.HTTPError); ok {
-			if he, ok := ee.Internal.(*xerr.Error); ok {
-				resp = he
-			} else {
-				// echo errors
-				resp = xerr.New(ee.Code, strings.ReplaceAll(http.StatusText(ee.Code), " ", ""),
-					fmt.Sprintf("%v %s", ee.Message, ee.Unwrap()))
-			}
+		} else if errors.As(err, &ee) {
+			// echo errors
+			resp = xerr.New(ee.Code, strings.ReplaceAll(http.StatusText(ee.Code), " ", ""),
+				fmt.Sprintf("%v %s", ee.Message, ee.Unwrap()))
 		} else if errors.Is(err, gorm.ErrRecordNotFound) {
 			// gorm not found
 			resp = xerr.New(404, "NotFound", "record not found")
