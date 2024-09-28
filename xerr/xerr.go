@@ -121,3 +121,14 @@ func As(err error) (*Error, bool) {
 	}
 	return nil, false
 }
+
+func IsClientError(err error) bool {
+	e, ok := As(err)
+	if !ok {
+		return false
+	}
+	if e.code >= 400 && e.code < 500 {
+		return true
+	}
+	return false
+}
