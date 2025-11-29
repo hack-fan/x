@@ -3,8 +3,8 @@ module github.com/hack-fan/x/xobj
 go 1.22
 
 require (
-	github.com/hack-fan/x/xerr v0.0.0-20240809143052-57b593274f3a
-	github.com/tencentyun/cos-go-sdk-v5 v0.7.55
+	github.com/hack-fan/x/xerr v0.0.0-20240928094013-25f7f3c63bb5
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.71
 )
 
 require (

@@ -1,12 +1,12 @@
 module github.com/hack-fan/x/xmp
 
-go 1.22
+go 1.24.0
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
-	github.com/go-resty/resty/v2 v2.15.3
+	github.com/go-resty/resty/v2 v2.17.0
 	github.com/hyacinthus/wechat v0.0.0-20210514030506-368540a18732
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 )
 
 require (
@@ -15,5 +15,5 @@ require (
 	github.com/chanxuehong/util v0.0.0-20200304121633-ca8141845b13 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 )

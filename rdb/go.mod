@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/go-redis/redis/v8 v8.11.5
-	go.uber.org/zap v1.27.0
+	go.uber.org/zap v1.27.1
 )
 
 require (
