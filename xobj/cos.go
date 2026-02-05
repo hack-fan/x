@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"mime"
 	"net/http"
 	"net/url"
@@ -92,11 +91,11 @@ func (c *cosClient) Get(key string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	file, err := ioutil.ReadAll(reader)
+	defer reader.Close()
+	file, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
 	}
-	reader.Close()
 	return file, nil
 }
 
