@@ -1,84 +1,68 @@
 package xtype
 
-import (
-	"fmt"
-	"net/url"
-	"sort"
-	"strings"
-)
+import "cmp"
 
-// Values maps a string key to a list of values.
-// It is typically used for object key.
-type Values map[string]string
-
-// Get gets the value of the given key.
-// If there are no values associated with the key, Get returns
-// the empty string.
-func (v Values) Get(key string) string {
-	if v == nil {
-		return ""
-	}
-	vs := v[key]
-	if len(vs) == 0 {
-		return ""
-	}
-	return vs
+// Compare returns -1, 0, or 1 depending on ordering of a and b
+func Compare[T cmp.Ordered](a, b T) int {
+	return cmp.Compare(a, b)
 }
 
-// Set sets the key to value. It replaces any existing values.
-// don't contain _ and - in values, use [a-z0-9] only
-func (v Values) Set(key, value string) {
-	v[key] = value
+// Min returns the minimum of two ordered values
+func Min[T cmp.Ordered](a, b T) T {
+	if a < b {
+		return a
+	}
+	return b
 }
 
-// Del deletes the values associated with key.
-func (v Values) Del(key string) {
-	delete(v, key)
+// Max returns the maximum of two ordered values
+func Max[T cmp.Ordered](a, b T) T {
+	if a > b {
+		return a
+	}
+	return b
 }
 
-// Parse parses the encoded values string
-func ParseQuery(src string) (Values, error) {
-	err := fmt.Errorf("invalid value string: %s", src)
-	m := make(Values)
-	pairs := strings.Split(src, "_")
-	for _, str := range pairs {
-		pair := strings.Split(str, "-")
-		if len(pair) != 2 {
-			return nil, err
-		}
-		k, err := url.PathUnescape(pair[0])
-		if err != nil {
-			return nil, err
-		}
-		v, err := url.PathUnescape(pair[1])
-		if err != nil {
-			return nil, err
-		}
-		m.Set(k, v)
+// Clamp returns value clamped between min and max
+func Clamp[T cmp.Ordered](v, min, max T) T {
+	if v < min {
+		return min
 	}
-	return m, nil
+	if v > max {
+		return max
+	}
+	return v
 }
 
-// Encode encodes the values into URL encoded form
-// ("bar-baz_foo-quux") sorted by key.
-func (v Values) Encode() string {
-	if v == nil {
-		return ""
-	}
-	var buf strings.Builder
-	keys := make([]string, 0, len(v))
-	for k := range v {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	for _, k := range keys {
-		vs := v[k]
-		if buf.Len() > 0 {
-			buf.WriteByte('_')
+// Coalesce returns first non-zero value
+func Coalesce[T comparable](vals ...T) T {
+	var zero T
+	for _, v := range vals {
+		if v != zero {
+			return v
 		}
-		buf.WriteString(url.PathEscape(k))
-		buf.WriteByte('-')
-		buf.WriteString(url.PathEscape(vs))
 	}
-	return buf.String()
+	return zero
+}
+
+// Ptr returns pointer to value
+func Ptr[T any](v T) *T {
+	return &v
+}
+
+// Deref returns value pointed to, or default value if nil
+func Deref[T any](p *T) T {
+	if p == nil {
+		var zero T
+		return zero
+	}
+	return *p
+}
+
+// DerefOr returns value pointed to, or the provided default
+func DerefOr[T any](p *T, def T) T {
+	if p == nil {
+		return def
+	}
+	return *p
 }
