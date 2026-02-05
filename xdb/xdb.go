@@ -11,7 +11,7 @@ import (
 
 var log *zap.SugaredLogger
 
-// Config 数据库配置，可以被主配置直接引用
+// Config database configuration, can be directly referenced by main configuration
 type Config struct {
 	Host     string `default:"mysql"`
 	Port     string `default:"3306"`
@@ -25,7 +25,7 @@ func SetLogger(logger *zap.SugaredLogger) {
 	log = logger
 }
 
-// New 用配置生成一个 gorm mysql 数据库对象,若目标数据库未启动会一直等待
+// New creates a gorm mysql database object with configuration, waits indefinitely if target database is not started
 func New(config Config) *gorm.DB {
 	var db *gorm.DB
 	var err error

@@ -14,7 +14,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// accessTokenServer 实现了 AccessTokenServer 接口.
+// accessTokenServer implements the AccessTokenServer interface.
 type accessTokenServer struct {
 	appID  string
 	secret string
@@ -25,7 +25,7 @@ type accessTokenServer struct {
 	ctx    context.Context
 }
 
-// newAccessTokenServer 创建一个新的 accessTokenServer, 如果 httpClient == nil 则默认使用 util.DefaultHttpClient.
+// newAccessTokenServer creates a new accessTokenServer, uses util.DefaultHttpClient if httpClient == nil.
 func newAccessTokenServer(appID, secret string, rdb *redis.Client, rest *resty.Client, log *zap.SugaredLogger) *accessTokenServer {
 	return &accessTokenServer{
 		appID:  url.QueryEscape(appID),
@@ -38,14 +38,14 @@ func newAccessTokenServer(appID, secret string, rdb *redis.Client, rest *resty.C
 	}
 }
 
-// 这个 wechat 包需要，奇葩
+// Required by this wechat package, weird
 func (s *accessTokenServer) IID01332E16DF5011E5A9D5A4DB30FED8E1() {}
 
-// Token 从缓存或微信服务器获得token
+// Token gets token from cache or WeChat server
 func (s *accessTokenServer) Token() (string, error) {
 	token, err := s.rdb.Get(s.ctx, s.key).Result()
 	if err == redis.Nil {
-		// 自己再捕获一次错误打印出来，mp包不靠谱不打
+		// Catch and print the error again, mp package is unreliable and doesn't print
 		token, err = s.requestToken()
 		if err != nil {
 			s.log.Errorf("mp token server error: %s", err)
@@ -57,7 +57,7 @@ func (s *accessTokenServer) Token() (string, error) {
 	return token, nil
 }
 
-// 这个接口就没用，不知道这作者怎么想的，强制刷新一下token吧
+// This interface is useless, don't know what the author was thinking, force refresh the token
 func (s *accessTokenServer) RefreshToken(current string) (token string, err error) {
 	s.log.Infow("refresh mp token", "current", current)
 	return s.requestToken()
@@ -70,7 +70,7 @@ type accessToken struct {
 	ErrorMsg  string `json:"errmsg"`
 }
 
-// updateToken 从微信服务器获取新的 access_token 并存入缓存, 同时返回该 access_token.
+// updateToken gets new access_token from WeChat server, stores it in cache, and returns the access_token.
 func (s *accessTokenServer) requestToken() (string, error) {
 	target := "https://api.weixin.qq.com/cgi-bin/token"
 	resp, err := s.rest.R().SetQueryParams(map[string]string{

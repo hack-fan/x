@@ -2,14 +2,14 @@
 
 set -e
 
-# 颜色输出
+# Color output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 日志函数
+# Logging functions
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
 }
@@ -26,13 +26,13 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# 检查是否在 git 仓库中
+# Check if in a git repository
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
     log_error "Not in a git repository"
     exit 1
 fi
 
-# 检查是否有未提交的更改
+# Check for uncommitted changes
 log_info "Checking for uncommitted changes..."
 if ! git diff-index --quiet HEAD --; then
     log_error "There are uncommitted changes. Please commit or stash them first."
@@ -40,14 +40,14 @@ if ! git diff-index --quiet HEAD --; then
     exit 1
 fi
 
-# 检查是否有未追踪的文件
+# Check for untracked files
 if [ -n "$(git ls-files --others --exclude-standard)" ]; then
     log_error "There are untracked files. Please add or ignore them first."
     git ls-files --others --exclude-standard
     exit 1
 fi
 
-# 检查是否有未推送的提交
+# Check for unpushed commits
 log_info "Checking for unpushed commits..."
 LOCAL=$(git rev-parse @)
 REMOTE=$(git rev-parse @{u} 2>/dev/null || echo "")
@@ -62,7 +62,7 @@ fi
 
 log_success "Working directory is clean and up to date"
 
-# 获取所有子模块目录（包含 go.mod 的目录，排除根目录）
+# Get all submodule directories (directories containing go.mod, excluding root directory)
 MODULES=()
 for dir in */; do
     if [ -f "${dir}go.mod" ]; then
@@ -79,44 +79,44 @@ fi
 log_info "Found ${#MODULES[@]} modules: ${MODULES[*]}"
 echo ""
 
-# 递增版本号函数
+# Increment version function
 increment_version() {
     local version=$1
-    # 移除 v 前缀
+    # Remove v prefix
     version=${version#v}
-    # 分割版本号
+    # Split version number
     IFS='.' read -r major minor patch <<< "$version"
-    # 递增 patch 版本
+    # Increment patch version
     patch=$((patch + 1))
     echo "v${major}.${minor}.${patch}"
 }
 
-# 处理每个模块
+# Process each module
 for module in "${MODULES[@]}"; do
     log_info "================================================"
     log_info "Processing module: $module"
     log_info "================================================"
 
-    # 获取模块的标签前缀
+    # Get module tag prefix
     tag_prefix="${module}/"
 
-    # 获取该模块的最新版本标签
+    # Get the latest version tag for this module
     latest_tag=$(git tag -l "${tag_prefix}v*" | sort -V | tail -n 1)
 
     if [ -z "$latest_tag" ]; then
-        # 没有发布过版本
+        # No version released yet
         new_version="v0.0.1"
         log_info "No previous version found. Will create initial version: $new_version"
         should_release=true
     else
-        # 已有版本，检查是否有变化
+        # Version exists, check for changes
         current_version="${latest_tag#${tag_prefix}}"
         log_info "Latest version: $current_version (tag: $latest_tag)"
 
-        # 获取该标签的 commit
+        # Get the commit for this tag
         tag_commit=$(git rev-list -n 1 "$latest_tag")
 
-        # 检查从该标签到现在，该目录是否有变化
+        # Check if there are changes in this directory since that tag
         changes=$(git diff --name-only "$tag_commit" HEAD -- "$module/")
 
         if [ -z "$changes" ]; then
@@ -131,7 +131,7 @@ for module in "${MODULES[@]}"; do
         fi
     fi
 
-    # 如果需要发布
+    # If release is needed
     if [ "$should_release" = true ]; then
         new_tag="${tag_prefix}${new_version}"
 
