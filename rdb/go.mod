@@ -3,7 +3,7 @@ module github.com/hack-fan/x/rdb
 go 1.22
 
 require (
-	github.com/go-redis/redis/v8 v8.11.5
+	github.com/redis/go-redis/v9 v9.17.3
 	go.uber.org/zap v1.27.1
 )
 

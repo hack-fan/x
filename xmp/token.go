@@ -9,8 +9,8 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/go-resty/resty/v2"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
