@@ -38,7 +38,7 @@ func TestNew(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			log := New(tt.debug)
-			defer log.Sync()
+			defer func() { _ = log.Sync() }()
 
 			if log == nil {
 				t.Fatal("Expected non-nil logger")
@@ -54,7 +54,7 @@ func TestNew(t *testing.T) {
 func TestNewWithHooks(t *testing.T) {
 	hook := &mockHook{}
 	log := New(false, hook)
-	defer log.Sync()
+	defer func() { _ = log.Sync() }()
 
 	if log == nil {
 		t.Fatal("Expected non-nil logger")
@@ -190,7 +190,7 @@ func TestNewWithConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			log := NewWithConfig(tt.options...)
-			defer log.Sync()
+			defer func() { _ = log.Sync() }()
 			tt.check(t, log)
 		})
 	}
@@ -299,7 +299,7 @@ func TestHttpPostWithContext(t *testing.T) {
 					t.Error("Expected non-nil response")
 				}
 				if resp != nil {
-					resp.Body.Close()
+					_ = resp.Body.Close()
 				}
 			}
 		})

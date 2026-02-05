@@ -151,7 +151,7 @@ func TestAs(t *testing.T) {
 		t.Error("As() should return true for xerr errors")
 	}
 	if result == nil {
-		t.Error("As() should return the error")
+		t.Fatal("As() should return the error")
 	}
 	if result.Key != "NotFound" {
 		t.Errorf("Expected key NotFound, got %s", result.Key)

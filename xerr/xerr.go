@@ -76,7 +76,7 @@ func ParseResp(resp *http.Response) *Error {
 		return nil
 	}
 	var msg string
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if strings.HasPrefix(resp.Header.Get("Content-Length"), "text") {
 		body, err := io.ReadAll(resp.Body)
 		if err != nil {

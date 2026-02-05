@@ -320,53 +320,6 @@ func indexOf(s, substr string) int {
 	return -1
 }
 
-func deepEqual(a, b any) bool {
-	// Simple deep equality for test cases
-	switch va := a.(type) {
-	case *Person:
-		if vb, ok := b.(*Person); ok {
-			return va.Name == vb.Name && va.Age == vb.Age
-		}
-	case *[]int:
-		if vb, ok := b.(*[]int); ok {
-			if len(*va) != len(*vb) {
-				return false
-			}
-			for i := range *va {
-				if (*va)[i] != (*vb)[i] {
-					return false
-				}
-			}
-			return true
-		}
-	case *string:
-		if vb, ok := b.(*string); ok {
-			return *va == *vb
-		}
-	case *int:
-		if vb, ok := b.(*int); ok {
-			return *va == *vb
-		}
-	case map[string]any:
-		if vb, ok := b.(map[string]any); ok {
-			if len(va) != len(vb) {
-				return false
-			}
-			for k := range va {
-				if !deepEqual(va[k], vb[k]) {
-					return false
-				}
-			}
-			return true
-		}
-	}
-	return false
-}
-
-func ptr[T any](v T) *T {
-	return &v
-}
-
 type Person struct {
 	Name string `json:"name"`
 	Age  int    `json:"age"`

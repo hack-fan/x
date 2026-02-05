@@ -91,7 +91,7 @@ func (c *cosClient) Get(key string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer reader.Close()
+	defer func() { _ = reader.Close() }()
 	file, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, err
@@ -109,7 +109,7 @@ func (c *cosClient) PutURL(src, key string) error {
 	if err != nil {
 		return fmt.Errorf("get %s failed when put to cos: %w", src, err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode >= 400 {
 		msg, _ := io.ReadAll(resp.Body)
 		return fmt.Errorf("get %s failed when put to cos, status: %s, error: %s", src, resp.Status, string(msg))

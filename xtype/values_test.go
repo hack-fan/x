@@ -209,7 +209,7 @@ func TestPtr(t *testing.T) {
 	t.Run("int pointer", func(t *testing.T) {
 		p := Ptr(42)
 		if p == nil {
-			t.Errorf("Ptr(42) returned nil")
+			t.Fatalf("Ptr(42) returned nil")
 		}
 		if *p != 42 {
 			t.Errorf("Ptr(42) = %d, want 42", *p)
@@ -219,7 +219,7 @@ func TestPtr(t *testing.T) {
 	t.Run("string pointer", func(t *testing.T) {
 		p := Ptr("hello")
 		if p == nil {
-			t.Errorf("Ptr(\"hello\") returned nil")
+			t.Fatalf("Ptr(\"hello\") returned nil")
 		}
 		if *p != "hello" {
 			t.Errorf("Ptr(\"hello\") = %s, want \"hello\"", *p)
@@ -230,7 +230,7 @@ func TestPtr(t *testing.T) {
 		type S struct{ Field int }
 		p := Ptr(S{Field: 123})
 		if p == nil {
-			t.Errorf("Ptr(S{Field: 123}) returned nil")
+			t.Fatalf("Ptr(S{Field: 123}) returned nil")
 		}
 		if p.Field != 123 {
 			t.Errorf("Ptr(S{Field: 123}).Field = %d, want 123", p.Field)
@@ -240,7 +240,7 @@ func TestPtr(t *testing.T) {
 	t.Run("zero value", func(t *testing.T) {
 		p := Ptr(0)
 		if p == nil {
-			t.Errorf("Ptr(0) returned nil")
+			t.Fatalf("Ptr(0) returned nil")
 		}
 		if *p != 0 {
 			t.Errorf("Ptr(0) = %d, want 0", *p)
