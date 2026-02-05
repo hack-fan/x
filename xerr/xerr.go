@@ -8,6 +8,29 @@ import (
 	"strings"
 )
 
+// Package xerr provides custom error handling with HTTP status codes.
+//
+// # Basic Usage
+//
+//	err := xerr.New(404, "NotFound", "User not found")
+//	fmt.Println(err.StatusCode()) // 404
+//
+// # Error Checking
+//
+//	if xerr.Is(err, "NotFound") {
+//	    // handle not found
+//	}
+//	if xerr.IsClientError(err) {
+//	    // handle 4xx errors
+//	}
+//
+// # Error Wrapping
+//
+//	err := xerr.Newf(500, "DatabaseError", "failed to connect: %w", dbErr)
+//	if errors.Is(err, dbErr) {
+//	    // database connection failed
+//	}
+//
 // ServerError always the same
 var ServerError = New(500, "ServerError",
 	"There was an issue on the server side. Please report to us or try again later.")
@@ -30,7 +53,7 @@ func New(code int, key string, msg string) *Error {
 }
 
 // Newf create an Error use format
-func Newf(code int, key string, format string, a ...interface{}) *Error {
+func Newf(code int, key string, format string, a ...any) *Error {
 	err := fmt.Errorf(format, a...)
 	return &Error{
 		err:     err,
@@ -131,4 +154,41 @@ func IsClientError(err error) bool {
 		return true
 	}
 	return false
+}
+
+// IsServerError check if error is a 5xx server error
+func IsServerError(err error) bool {
+	e, ok := As(err)
+	if !ok {
+		return false
+	}
+	return e.code >= 500 && e.code < 600
+}
+
+// Join wraps errors.Join to create a multi-error xerr
+func Join(code int, key string, msg string, errs ...error) *Error {
+	joined := errors.Join(errs...)
+	return &Error{
+		err:     joined,
+		code:    code,
+		Key:     key,
+		Message: msg,
+	}
+}
+
+// UnwrapAll returns all wrapped errors
+func (e *Error) UnwrapAll() []error {
+	var result []error
+	err := error(e)
+	for err != nil {
+		if u, ok := err.(interface{ Unwrap() error }); ok {
+			err = u.Unwrap()
+			if err != nil {
+				result = append(result, err)
+			}
+		} else {
+			break
+		}
+	}
+	return result
 }
