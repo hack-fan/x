@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// NewErrorHandler return a customize echo's HTTP error handler.
+// NewErrorHandler returns a customized echo's HTTP error handler.
 func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 	return func(err error, c echo.Context) {
 		// the final response body
@@ -55,4 +55,14 @@ func NewErrorHandler(logger *zap.Logger) echo.HTTPErrorHandler {
 			}
 		}
 	}
+}
+
+// ErrorHandler is a convenience function that returns an error handler using a default logger.
+// Use this for quick setup without custom logger configuration.
+func ErrorHandler() echo.HTTPErrorHandler {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	return NewErrorHandler(logger)
 }
