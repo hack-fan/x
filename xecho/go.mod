@@ -1,11 +1,11 @@
 module github.com/hack-fan/x/xecho
 
-go 1.24.0
+go 1.26.1
 
 require (
 	github.com/go-playground/validator/v10 v10.30.1
-	github.com/hack-fan/x/xerr v0.0.1
-	github.com/labstack/echo/v4 v4.15.0
+	github.com/hack-fan/x/xerr v0.0.2
+	github.com/labstack/echo/v4 v4.15.1
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/zap v1.27.1
 	gorm.io/gorm v1.31.1
@@ -26,10 +26,10 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/crypto v0.47.0 // indirect
-	golang.org/x/net v0.49.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
-	golang.org/x/text v0.33.0 // indirect
-	golang.org/x/time v0.14.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/net v0.52.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

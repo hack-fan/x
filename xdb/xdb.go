@@ -1,6 +1,7 @@
 package xdb
 
 import (
+	"fmt"
 	"time"
 
 	"go.uber.org/zap"
@@ -39,9 +40,8 @@ func New(config Config) *gorm.DB {
 		panic("missing db name config")
 	}
 
-	var dsn = config.User + ":" + config.Password +
-		"@tcp(" + config.Host + ":" + config.Port + ")/" + config.Name +
-		"?charset=utf8mb4&parseTime=True&loc=Local&timeout=90s"
+	var dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=90s",
+		config.User, config.Password, config.Host, config.Port, config.Name)
 	for {
 		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 			Logger: logger.New(

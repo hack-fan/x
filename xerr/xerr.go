@@ -181,14 +181,12 @@ func (e *Error) UnwrapAll() []error {
 	var result []error
 	err := error(e)
 	for err != nil {
-		if u, ok := err.(interface{ Unwrap() error }); ok {
-			err = u.Unwrap()
-			if err != nil {
-				result = append(result, err)
-			}
-		} else {
+		unwrapped := errors.Unwrap(err)
+		if unwrapped == nil {
 			break
 		}
+		result = append(result, unwrapped)
+		err = unwrapped
 	}
 	return result
 }

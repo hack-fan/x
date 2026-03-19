@@ -10,9 +10,12 @@ func LoggerSkipper(c echo.Context) bool {
 	return c.Path() == "/status"
 }
 
-// LoggerMid skip /status endpoint, will be deprecated.
+// Deprecated: LoggerMid skip /status endpoint, use RequestLoggerWithConfig directly.
 func LoggerMid() echo.MiddlewareFunc {
-	return middleware.LoggerWithConfig(middleware.LoggerConfig{
+	return middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		Skipper: LoggerSkipper,
+		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+			return nil
+		},
 	})
 }
