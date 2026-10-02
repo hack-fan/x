@@ -4,7 +4,7 @@ go 1.27.0
 
 require (
 	github.com/go-playground/validator/v10 v10.30.5
-	github.com/hack-fan/x/xerr v0.0.3
+	github.com/hack-fan/x/xerr v0.0.4
 	github.com/labstack/echo/v5 v5.4.0
 	github.com/stretchr/testify v1.12.1
 	go.uber.org/zap v1.28.0

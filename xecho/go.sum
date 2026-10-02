@@ -8,8 +8,8 @@ github.com/go-playground/universal-translator v0.18.2 h1:LCsMLC9RzmbUMNUPVYD15dm
 github.com/go-playground/universal-translator v0.18.2/go.mod h1:67VZIMp5lQpDWlnStOct22q1bkdJGJqHghbOtmkawxk=
 github.com/go-playground/validator/v10 v10.30.5 h1:YyCXvVShZbs2Sm3Mb53eNOlhRXctSOzW5QJAouCTZL4=
 github.com/go-playground/validator/v10 v10.30.5/go.mod h1:wEqiaov48pXX1kjhc3Da8y0M0Dtg/BK7gurFBLgwFrQ=
-github.com/hack-fan/x/xerr v0.0.3 h1:XeboFa5BqFy3tknjz+zM8o6fVgbN9BNqJYVjzhj+uls=
-github.com/hack-fan/x/xerr v0.0.3/go.mod h1:IAurmHVoeYFasabFSX4xNcRyEIT/QcY9NoL3Mu+fu3c=
+github.com/hack-fan/x/xerr v0.0.4 h1:Qf5u3GA/ZkZ3HMTjviEfvlADyQHa/TEXfjKkNEMH/VA=
+github.com/hack-fan/x/xerr v0.0.4/go.mod h1:fJiBjWslrwjqwv3qxLABz71FSp3aGv/JePDZ7eI+1kk=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.5 h1:/o9tlHleP7gOFmsnYNz3RGnqzefHA47wQpKrrdTIwXQ=
