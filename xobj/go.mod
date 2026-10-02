@@ -1,10 +1,10 @@
 module github.com/hack-fan/x/xobj
 
-go 1.26.1
+go 1.27.0
 
 require (
-	github.com/hack-fan/x/xerr v0.0.2
-	github.com/tencentyun/cos-go-sdk-v5 v0.7.73
+	github.com/hack-fan/x/xerr v0.0.3
+	github.com/tencentyun/cos-go-sdk-v5 v0.7.75
 )
 
 require (

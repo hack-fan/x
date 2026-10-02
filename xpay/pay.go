@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/hyacinthus/wechat/mch/core"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // Config is wechat pay config
@@ -35,8 +35,8 @@ type Handler interface {
 // NewEchoHandler gen a echo handler
 func NewEchoHandler(config Config, h Handler) echo.HandlerFunc {
 	s := core.NewServer(config.MPAppID, config.MchID, config.APIKey, h, h)
-	return func(c echo.Context) error {
-		s.ServeHTTP(c.Response().Writer, c.Request(), c.QueryParams())
+	return func(c *echo.Context) error {
+		s.ServeHTTP(c.Response(), c.Request(), c.QueryParams())
 		return nil
 	}
 }

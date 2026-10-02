@@ -1,13 +1,3 @@
-package xerr
-
-import (
-	"errors"
-	"fmt"
-	"io"
-	"net/http"
-	"strings"
-)
-
 // Package xerr provides custom error handling with HTTP status codes.
 //
 // # Basic Usage
@@ -30,7 +20,17 @@ import (
 //	if errors.Is(err, dbErr) {
 //	    // database connection failed
 //	}
-//
+package xerr
+
+import (
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"strings"
+	"unicode/utf8"
+)
+
 // ServerError always the same
 var ServerError = New(500, "ServerError",
 	"There was an issue on the server side. Please report to us or try again later.")
@@ -63,6 +63,9 @@ func Newf(code int, key string, format string, a ...any) *Error {
 	}
 }
 
+// maxRespMsgLen limits how many bytes of a text error body ParseResp keeps.
+const maxRespMsgLen = 1000
+
 // ParseResp can parse http response, if there is a error, it would read and close the body for error messages.
 func ParseResp(resp *http.Response) *Error {
 	if resp == nil {
@@ -77,8 +80,9 @@ func ParseResp(resp *http.Response) *Error {
 	}
 	var msg string
 	defer func() { _ = resp.Body.Close() }()
-	if strings.HasPrefix(resp.Header.Get("Content-Length"), "text") {
-		body, err := io.ReadAll(resp.Body)
+	if strings.HasPrefix(resp.Header.Get("Content-Type"), "text") {
+		// read one more byte to know whether the body is truncated
+		body, err := io.ReadAll(io.LimitReader(resp.Body, maxRespMsgLen+1))
 		if err != nil {
 			return &Error{
 				code:    500,
@@ -86,16 +90,28 @@ func ParseResp(resp *http.Response) *Error {
 				Message: fmt.Sprintf("xerr parse response failed: %s", err),
 			}
 		}
-		msg = string(body)
-		if len(body) > 1000 {
-			msg = msg[:1000]
+		if len(body) > maxRespMsgLen {
+			body = trimPartialRune(body[:maxRespMsgLen])
 		}
+		msg = string(body)
 	}
 	return &Error{
 		code:    resp.StatusCode,
 		Key:     strings.ReplaceAll(http.StatusText(resp.StatusCode), " ", ""),
 		Message: msg,
 	}
+}
+
+// trimPartialRune drops a trailing UTF-8 character cut in half by the read limit,
+// other bytes are kept as is.
+func trimPartialRune(b []byte) []byte {
+	for i := 0; i < utf8.UTFMax-1 && len(b) > 0; i++ {
+		if r, size := utf8.DecodeLastRune(b); r != utf8.RuneError || size != 1 {
+			break
+		}
+		b = b[:len(b)-1]
+	}
+	return b
 }
 
 // Error makes it compatible with `error` interface.
@@ -116,53 +132,30 @@ func (e *Error) Unwrap() error {
 // Is err the instance of Error,and has <key>?
 func Is(err error, key string) bool {
 	src, ok := As(err)
-	if !ok {
-		return false
-	}
-	if src.Key == key {
-		return true
-	}
-	return false
+	return ok && src.Key == key
 }
 
 // IsCode check if the status code is <code>
 func IsCode(err error, code int) bool {
 	src, ok := As(err)
-	if !ok {
-		return false
-	}
-	if src.code == code {
-		return true
-	}
-	return false
+	return ok && src.code == code
 }
 
+// As finds the first *Error in err's tree.
 func As(err error) (*Error, bool) {
-	e := new(Error)
-	if errors.As(err, &e) {
-		return e, true
-	}
-	return nil, false
+	return errors.AsType[*Error](err)
 }
 
+// IsClientError check if error is a 4xx client error
 func IsClientError(err error) bool {
 	e, ok := As(err)
-	if !ok {
-		return false
-	}
-	if e.code >= 400 && e.code < 500 {
-		return true
-	}
-	return false
+	return ok && e.code >= 400 && e.code < 500
 }
 
 // IsServerError check if error is a 5xx server error
 func IsServerError(err error) bool {
 	e, ok := As(err)
-	if !ok {
-		return false
-	}
-	return e.code >= 500 && e.code < 600
+	return ok && e.code >= 500 && e.code < 600
 }
 
 // Join wraps errors.Join to create a multi-error xerr

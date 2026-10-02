@@ -194,8 +194,8 @@ func TestCoalesce(t *testing.T) {
 
 	// Test with pointers
 	t.Run("pointers", func(t *testing.T) {
-		a := ptrInt(42)
-		b := ptrInt(100)
+		a := new(42)
+		b := new(100)
 		if Coalesce[*int](nil, a, b) != a {
 			t.Errorf("Coalesce(nil, a, b) should return a")
 		}
@@ -359,8 +359,4 @@ func TestDerefOr(t *testing.T) {
 			t.Errorf("DerefOr(nil, 0) = %d, want 0", result)
 		}
 	})
-}
-
-func ptrInt(v int) *int {
-	return &v
 }

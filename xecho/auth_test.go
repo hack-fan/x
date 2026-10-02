@@ -7,51 +7,60 @@ import (
 	"testing"
 
 	"github.com/hack-fan/x/xerr"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/zap"
 )
 
-func TestKeyAuthErrorHandler(t *testing.T) {
-	tests := []struct {
-		name           string
-		inputErr       error
-		expectedStatus int
-		expectXErr     bool
-	}{
-		{
-			name:           "missing key error",
-			inputErr:       errors.New("missing key in request"),
-			expectedStatus: 400,
-			expectXErr:     true,
-		},
-		{
-			name:           "invalid key error",
-			inputErr:       errors.New("invalid key format"),
-			expectedStatus: 400,
-			expectXErr:     true,
-		},
-		{
-			name:           "other error passthrough",
-			inputErr:       errors.New("some other error"),
-			expectedStatus: 0,
-			expectXErr:     false,
-		},
-	}
+func TestKeyAuth(t *testing.T) {
+	e := echo.New()
+	e.HTTPErrorHandler = NewErrorHandler(zap.NewNop())
+	e.Use(middleware.KeyAuthWithConfig(KeyAuthConfig(
+		func(_ *echo.Context, key string, _ middleware.ExtractorSource) (bool, error) {
+			if key == "boom" {
+				return false, errors.New("validator failed")
+			}
+			return key == "valid-key", nil
+		})))
+	e.GET("/", func(c *echo.Context) error { return c.NoContent(http.StatusOK) })
 
+	tests := []struct {
+		name       string
+		auth       string
+		wantStatus int
+		wantKey    string
+	}{
+		{name: "valid key", auth: "Bearer valid-key", wantStatus: http.StatusOK},
+		{name: "missing key", wantStatus: http.StatusBadRequest, wantKey: "InvalidKey"},
+		{name: "invalid key", auth: "Bearer wrong", wantStatus: http.StatusBadRequest, wantKey: "InvalidKey"},
+		{name: "validator error passthrough", auth: "Bearer boom", wantStatus: http.StatusInternalServerError, wantKey: "ServerError"},
+	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			e := echo.New()
-			c := e.NewContext(nil, nil)
+			req := httptest.NewRequest(http.MethodGet, "/", nil)
+			if tt.auth != "" {
+				req.Header.Set(echo.HeaderAuthorization, tt.auth)
+			}
+			rec := httptest.NewRecorder()
+			e.ServeHTTP(rec, req)
 
-			result := KeyAuthErrorHandler(tt.inputErr, c)
-
-			if tt.expectXErr {
-				xErr, ok := result.(*xerr.Error)
-				assert.True(t, ok, "expected xerr.Error")
-				assert.Equal(t, tt.expectedStatus, xErr.StatusCode())
+			assert.Equal(t, tt.wantStatus, rec.Code)
+			if tt.wantKey != "" {
+				assert.Contains(t, rec.Body.String(), `"error":"`+tt.wantKey+`"`)
 			}
 		})
 	}
+}
+
+func TestKeyAuthErrorHandler(t *testing.T) {
+	other := errors.New("some other error")
+	assert.Same(t, other, KeyAuthErrorHandler(nil, other))
+
+	err := KeyAuthErrorHandler(nil, middleware.ErrInvalidKey)
+	xErr, ok := xerr.As(err)
+	assert.True(t, ok, "expected xerr.Error")
+	assert.Equal(t, 400, xErr.StatusCode())
 }
 
 func TestGetCtx(t *testing.T) {

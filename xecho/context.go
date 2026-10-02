@@ -1,7 +1,7 @@
 package xecho
 
 import (
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 const (
@@ -19,7 +19,7 @@ const (
 //	if !ok {
 //	    return errors.New("user_id not found")
 //	}
-func GetCtx[T any](c echo.Context, key string) (T, bool) {
+func GetCtx[T any](c *echo.Context, key string) (T, bool) {
 	store, ok := c.Get(ctxStoreKey).(map[string]any)
 	if !ok {
 		var zero T
@@ -42,7 +42,7 @@ func GetCtx[T any](c echo.Context, key string) (T, bool) {
 //
 //	SetCtx(c, "user_id", "12345")
 //	SetCtx(c, "is_admin", true)
-func SetCtx[T any](c echo.Context, key string, val T) {
+func SetCtx[T any](c *echo.Context, key string, val T) {
 	store, ok := c.Get(ctxStoreKey).(map[string]any)
 	if !ok {
 		store = make(map[string]any)
@@ -58,7 +58,7 @@ func SetCtx[T any](c echo.Context, key string, val T) {
 // Example:
 //
 //	userID := MustGetCtx[string](c, "user_id")
-func MustGetCtx[T any](c echo.Context, key string) T {
+func MustGetCtx[T any](c *echo.Context, key string) T {
 	val, ok := GetCtx[T](c, key)
 	if !ok {
 		panic("context key not found: " + key)

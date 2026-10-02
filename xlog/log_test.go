@@ -1,11 +1,10 @@
 package xlog
 
 import (
-	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -226,84 +225,46 @@ func TestWithEncoding(t *testing.T) {
 	}
 }
 
-// TestHttpPostWithContext tests the context-aware HTTP client
-func TestHttpPostWithContext(t *testing.T) {
-	tests := []struct {
-		name        string
-		ctx         context.Context
-		setupServer func() *httptest.Server
-		wantError   bool
-	}{
-		{
-			name: "successful request",
-			ctx:  context.Background(),
-			setupServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.Method != "POST" {
-						t.Errorf("Expected POST request, got %s", r.Method)
-					}
-					if r.Header.Get("Content-Type") != "application/json" {
-						t.Errorf("Expected Content-Type application/json, got %s", r.Header.Get("Content-Type"))
-					}
-					w.WriteHeader(http.StatusOK)
-				}))
-			},
-			wantError: false,
-		},
-		{
-			name: "context canceled",
-			ctx: func() context.Context {
-				ctx, cancel := context.WithCancel(context.Background())
-				cancel() // Cancel immediately
-				return ctx
-			}(),
-			setupServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					w.WriteHeader(http.StatusOK)
-				}))
-			},
-			wantError: true,
-		},
-		{
-			name: "context timeout",
-			ctx: func() context.Context {
-				ctx, cancel := context.WithTimeout(context.Background(), time.Nanosecond)
-				defer cancel()
-				return ctx
-			}(),
-			setupServer: func() *httptest.Server {
-				return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					time.Sleep(time.Millisecond)
-					w.WriteHeader(http.StatusOK)
-				}))
-			},
-			wantError: true,
-		},
-	}
+// TestWeworkSender_SendRobotMsg tests sending a robot message to the WeWork webhook.
+func TestWeworkSender_SendRobotMsg(t *testing.T) {
+	var got RobotMsg
+	var gotKey, gotContentType string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotKey = r.URL.Query().Get("key")
+		gotContentType = r.Header.Get("Content-Type")
+		if err := json.NewDecoder(r.Body).Decode(&got); err != nil {
+			t.Errorf("decode request body: %v", err)
+		}
+		if gotKey == "bad" {
+			w.WriteHeader(http.StatusBadRequest)
+		}
+	}))
+	defer server.Close()
+	s := WeworkSender{BaseURL: server.URL + "?key="}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			server := tt.setupServer()
-			defer server.Close()
+	t.Run("empty key is a no-op", func(t *testing.T) {
+		if err := s.SendRobotMsg("", "hello"); err != nil {
+			t.Errorf("SendRobotMsg with empty key = %v, want nil", err)
+		}
+	})
 
-			resp, err := httpPostWithContext(tt.ctx, server.URL, nil)
+	t.Run("send text message", func(t *testing.T) {
+		if err := s.SendRobotMsg("k1", "hello"); err != nil {
+			t.Fatalf("SendRobotMsg = %v", err)
+		}
+		if gotKey != "k1" || gotContentType != "application/json" {
+			t.Errorf("key = %q, content type = %q", gotKey, gotContentType)
+		}
+		if got.MsgType != "text" || got.Text.Content != "hello" {
+			t.Errorf("body = %+v", got)
+		}
+	})
 
-			if tt.wantError && err == nil {
-				t.Error("Expected error but got nil")
-			}
-			if !tt.wantError {
-				if err != nil {
-					t.Errorf("Expected no error but got: %v", err)
-				}
-				if resp == nil {
-					t.Error("Expected non-nil response")
-				}
-				if resp != nil {
-					_ = resp.Body.Close()
-				}
-			}
-		})
-	}
+	t.Run("api error status", func(t *testing.T) {
+		if err := s.SendRobotMsg("bad", "hello"); err == nil {
+			t.Error("SendRobotMsg with 400 response should return error")
+		}
+	})
 }
 
 // assertError is a test error type

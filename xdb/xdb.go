@@ -2,6 +2,7 @@ package xdb
 
 import (
 	"fmt"
+	"net"
 	"time"
 
 	"go.uber.org/zap"
@@ -40,14 +41,14 @@ func New(config Config) *gorm.DB {
 		panic("missing db name config")
 	}
 
-	var dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=90s",
-		config.User, config.Password, config.Host, config.Port, config.Name)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&timeout=90s",
+		config.User, config.Password, net.JoinHostPort(config.Host, config.Port), config.Name)
 	for {
 		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
 			Logger: logger.New(
 				zap.NewStdLog(log.Desugar()), // io writer
 				logger.Config{
-					SlowThreshold:             time.Second * 3, // Slow SQL threshold
+					SlowThreshold:             3 * time.Second, // Slow SQL threshold
 					LogLevel:                  logger.Warn,     // Log level
 					IgnoreRecordNotFoundError: true,            // Ignore ErrRecordNotFound error for logger
 					Colorful:                  false,           // Disable color
@@ -56,7 +57,7 @@ func New(config Config) *gorm.DB {
 		})
 		if err != nil {
 			log.Warnw("waiting for connect to db", "origin", err.Error())
-			time.Sleep(time.Second * 2)
+			time.Sleep(2 * time.Second)
 			continue
 		}
 		conn, err := db.DB()

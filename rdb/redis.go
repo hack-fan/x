@@ -2,6 +2,8 @@ package rdb
 
 import (
 	"context"
+	"fmt"
+	"net"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -23,7 +25,7 @@ type Config struct {
 
 func New(config Config) *redis.Client {
 	var kv = redis.NewClient(&redis.Options{
-		Addr:     config.Host + ":" + config.Port,
+		Addr:     net.JoinHostPort(config.Host, config.Port),
 		Password: config.Password,
 		DB:       config.DB,
 	})
@@ -33,21 +35,15 @@ func New(config Config) *redis.Client {
 		log = logger.Sugar()
 	}
 
-	var i int
-	for {
-		err := kv.Ping(context.Background()).Err()
-		if err != nil {
-			if i >= 60 {
-				panic("connect to redis failed")
-			}
+	var err error
+	for i := range 60 {
+		if i > 0 {
 			time.Sleep(time.Second)
-			i += 1
-			continue
 		}
-		break
+		if err = kv.Ping(context.Background()).Err(); err == nil {
+			log.Info("redis connect successful")
+			return kv
+		}
 	}
-
-	log.Info("redis connect successful")
-
-	return kv
+	panic(fmt.Sprintf("connect to redis failed: %v", err))
 }

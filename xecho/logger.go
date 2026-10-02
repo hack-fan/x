@@ -1,15 +1,15 @@
 package xecho
 
 import (
-	"fmt"
-	"time"
+	"slices"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
+	"github.com/labstack/echo/v5/middleware"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 )
 
-type Skipper func(ctx echo.Context) bool
+// Skipper decides whether a request should not be logged.
+type Skipper = middleware.Skipper
 
 // SkipRule must be fully equal
 type SkipRule struct {
@@ -20,71 +20,73 @@ type SkipRule struct {
 
 // NewSkipper gen a logger skipper
 func NewSkipper(rules []SkipRule) Skipper {
-	return func(c echo.Context) bool {
-		for _, rule := range rules {
-			if c.Request().Method == rule.Method &&
-				c.Path() == rule.Path &&
-				c.Response().Status == rule.StatusCode {
-				return true
-			}
-		}
-		return false
+	return func(c *echo.Context) bool {
+		_, status := echo.ResolveResponseStatus(c.Response(), nil)
+		return slices.Contains(rules, SkipRule{
+			Method:     c.Request().Method,
+			Path:       c.Path(),
+			StatusCode: status,
+		})
 	}
 }
 
-// ZapLoggerWithSkipper use zap as request logger
-// thank https://github.com/brpaz/echozap
+// LoggerSkipper skip the heartbeat /status log
+func LoggerSkipper(c *echo.Context) bool {
+	return c.Path() == "/status"
+}
+
+// ZapLoggerWithSkipper use zap as request logger.
+// Errors are handled by the echo error handler before logging, so the logged status is final.
+// The skipper is checked after the request is handled, so it can use the response status.
+// Register it as the first (outermost) middleware, because the response is sent once it handles the error.
 func ZapLoggerWithSkipper(log *zap.Logger, skipper Skipper) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			start := time.Now()
-
-			err := next(c)
-			if err != nil {
-				c.Error(err)
-			}
-
-			// skip log
+	return middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+		HandleError:     true,
+		LogLatency:      true,
+		LogRemoteIP:     true,
+		LogHost:         true,
+		LogMethod:       true,
+		LogURI:          true,
+		LogStatus:       true,
+		LogResponseSize: true,
+		LogUserAgent:    true,
+		LogRequestID:    true,
+		LogValuesFunc: func(c *echo.Context, v middleware.RequestLoggerValues) error {
 			if skipper != nil && skipper(c) {
 				return nil
 			}
 
-			req := c.Request()
-			res := c.Response()
-
-			fields := []zapcore.Field{
-				zap.String("remote_ip", c.RealIP()),
-				zap.String("time", time.Since(start).String()),
-				zap.String("host", req.Host),
-				zap.String("request", fmt.Sprintf("%s %s", req.Method, req.RequestURI)),
-				zap.Int("status", res.Status),
-				zap.Int64("size", res.Size),
-				zap.String("user_agent", req.UserAgent()),
+			fields := []zap.Field{
+				zap.String("remote_ip", v.RemoteIP),
+				zap.String("time", v.Latency.String()),
+				zap.String("host", v.Host),
+				zap.String("request", v.Method+" "+v.URI),
+				zap.Int("status", v.Status),
+				zap.Int64("size", v.ResponseSize),
+				zap.String("user_agent", v.UserAgent),
 			}
-
-			id := req.Header.Get(echo.HeaderXRequestID)
-			if id == "" {
-				id = res.Header().Get(echo.HeaderXRequestID)
-				fields = append(fields, zap.String("request_id", id))
+			if v.RequestID != "" {
+				fields = append(fields, zap.String("request_id", v.RequestID))
+			}
+			if v.Error != nil {
+				fields = append(fields, zap.Error(v.Error))
 			}
 
 			// log all at info level
 			// if there is a server error, echo error handler will log it as error there.
-			n := res.Status
 			switch {
-			case n >= 500:
+			case v.Status >= 500:
 				log.Info("Server Error", fields...)
-			case n >= 400:
+			case v.Status >= 400:
 				log.Info("Client Error", fields...)
-			case n >= 300:
+			case v.Status >= 300:
 				log.Info("Redirection", fields...)
 			default:
 				log.Info("Success", fields...)
 			}
-
 			return nil
-		}
-	}
+		},
+	})
 }
 
 // ZapLogger use zap for echo logger

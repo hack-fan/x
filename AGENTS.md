@@ -1,13 +1,13 @@
 # x
 
-Go utility library monorepo: `github.com/hack-fan/x` (Go 1.26).
+Go utility library monorepo: `github.com/hack-fan/x` (Go 1.27).
 Each top-level dir is an independent module with its own `go.mod` (the root `go.mod` is an empty placeholder); there is no `go.work`.
 
 ## Packages
 
 - **xerr** - Errors carrying HTTP status codes
 - **xlog** - Zap logger wrapper, WeWork notification
-- **xecho** - Echo v4 helpers (auth, error handler, logger, pagination)
+- **xecho** - Echo v5 helpers (auth, error handler, logger, pagination)
 - **xdb** - GORM/MySQL helpers
 - **rdb** - Redis client helpers
 - **xmp** - WeChat Mini Program helpers

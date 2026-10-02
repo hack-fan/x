@@ -3,7 +3,7 @@ package xecho
 import (
 	"strconv"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"gorm.io/gorm"
 )
 
@@ -32,12 +32,12 @@ func (p Paginator) Offset() int {
 
 // Apply paginator to gorm query
 func (p Paginator) Apply(tx *gorm.DB) *gorm.DB {
-	offset := p.Offset()
-	return tx.Offset(offset).Limit(p.PageSize)
+	p.check()
+	return tx.Offset(p.Offset()).Limit(p.PageSize)
 }
 
 // AddHeader to echo resp
-func (p Paginator) AddHeader(c echo.Context, total int64) {
+func (p Paginator) AddHeader(c *echo.Context, total int64) {
 	p.check()
 	c.Response().Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
 	c.Response().Header().Set("X-Page-Current", strconv.Itoa(p.Page))

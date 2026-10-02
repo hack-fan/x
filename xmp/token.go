@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"time"
 
 	"github.com/go-resty/resty/v2"
@@ -28,8 +27,8 @@ type accessTokenServer struct {
 // newAccessTokenServer creates a new accessTokenServer, uses util.DefaultHttpClient if httpClient == nil.
 func newAccessTokenServer(appID, secret string, rdb *redis.Client, rest *resty.Client, log *zap.SugaredLogger) *accessTokenServer {
 	return &accessTokenServer{
-		appID:  url.QueryEscape(appID),
-		secret: url.QueryEscape(secret),
+		appID:  appID,
+		secret: secret,
 		key:    "mp:token:" + appID,
 		rest:   rest,
 		rdb:    rdb,
@@ -44,11 +43,12 @@ func (s *accessTokenServer) IID01332E16DF5011E5A9D5A4DB30FED8E1() {}
 // Token gets token from cache or WeChat server
 func (s *accessTokenServer) Token() (string, error) {
 	token, err := s.rdb.Get(s.ctx, s.key).Result()
-	if err == redis.Nil {
+	if errors.Is(err, redis.Nil) {
 		// Catch and print the error again, mp package is unreliable and doesn't print
 		token, err = s.requestToken()
 		if err != nil {
 			s.log.Errorf("mp token server error: %s", err)
+			return "", err
 		}
 	} else if err != nil {
 		s.log.Errorf("mp token server redis error:%s", err)
@@ -85,11 +85,8 @@ func (s *accessTokenServer) requestToken() (string, error) {
 		return "", fmt.Errorf("get mp token error:%s", resp.Status())
 	}
 	// parse
-	body := resp.Body()
-	s.log.Infof("mp token body: %s", string(body))
-	at := new(accessToken)
-	err = json.Unmarshal(body, at)
-	if err != nil {
+	var at accessToken
+	if err = json.Unmarshal(resp.Body(), &at); err != nil {
 		return "", err
 	}
 	// check mp error
@@ -100,8 +97,9 @@ func (s *accessTokenServer) requestToken() (string, error) {
 	if at.Token == "" || at.ExpiresIn == 0 {
 		return "", errors.New("get mp token unknown error")
 	}
+	s.log.Infow("mp token refreshed", "expires_in", at.ExpiresIn)
 	// set to redis
-	err = s.rdb.Set(s.ctx, s.key, at.Token, time.Second*time.Duration(at.ExpiresIn)).Err()
+	err = s.rdb.Set(s.ctx, s.key, at.Token, time.Duration(at.ExpiresIn)*time.Second).Err()
 	if err != nil {
 		return "", err
 	}

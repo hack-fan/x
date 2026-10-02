@@ -1,7 +1,6 @@
 package xlog
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -27,17 +26,7 @@ func (h Hooks) Process(entry zapcore.Entry) error {
 	return nil
 }
 
-var httpc = &http.Client{Timeout: time.Second * 30}
-
-// httpPostWithContext sends HTTP POST with context and timeout
-func httpPostWithContext(ctx context.Context, url string, body any) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, "POST", url, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	return httpc.Do(req)
-}
+var httpc = &http.Client{Timeout: 30 * time.Second}
 
 func New(debug bool, hooks ...Hook) *zap.Logger {
 	var log *zap.Logger

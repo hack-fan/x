@@ -3,6 +3,9 @@ package xerr
 import (
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
+	"strings"
 	"testing"
 )
 
@@ -354,6 +357,59 @@ func TestParseResp(t *testing.T) {
 		}
 		if err.StatusCode() != 500 {
 			t.Errorf("Expected status code 500 for nil response, got %d", err.StatusCode())
+		}
+	})
+
+	newResp := func(code int, contentType, body string) *http.Response {
+		return &http.Response{
+			StatusCode: code,
+			Header:     http.Header{"Content-Type": {contentType}},
+			Body:       io.NopCloser(strings.NewReader(body)),
+		}
+	}
+
+	t.Run("success response", func(t *testing.T) {
+		if err := ParseResp(newResp(200, "text/plain", "ok")); err != nil {
+			t.Errorf("ParseResp(200) = %v, want nil", err)
+		}
+	})
+
+	t.Run("text error body", func(t *testing.T) {
+		err := ParseResp(newResp(404, "text/plain; charset=utf-8", "no such user"))
+		if err.StatusCode() != 404 || err.Key != "NotFound" || err.Message != "no such user" {
+			t.Errorf("ParseResp(404 text) = %d %q %q", err.StatusCode(), err.Key, err.Message)
+		}
+	})
+
+	t.Run("non-text error body", func(t *testing.T) {
+		err := ParseResp(newResp(500, "application/json", `{"error":"x"}`))
+		if err.Message != "" {
+			t.Errorf("ParseResp(500 json) message = %q, want empty", err.Message)
+		}
+	})
+
+	t.Run("non utf-8 text body is kept", func(t *testing.T) {
+		gbk := "\xc4\xe3\xba\xc3" // "你好" in GBK
+		err := ParseResp(newResp(400, "text/plain; charset=gbk", gbk))
+		if err.Message != gbk {
+			t.Errorf("message = %q, want %q", err.Message, gbk)
+		}
+	})
+
+	t.Run("body of exactly the limit is kept", func(t *testing.T) {
+		body := strings.Repeat("a", maxRespMsgLen-1) + "\xc4"
+		if err := ParseResp(newResp(400, "text/plain", body)); err.Message != body {
+			t.Errorf("message length = %d, want %d", len(err.Message), len(body))
+		}
+	})
+
+	t.Run("long text body is truncated", func(t *testing.T) {
+		err := ParseResp(newResp(400, "text/plain", strings.Repeat("中", 500)))
+		if len(err.Message) > maxRespMsgLen {
+			t.Errorf("message length = %d, want <= %d", len(err.Message), maxRespMsgLen)
+		}
+		if !strings.HasPrefix(err.Message, "中") || strings.ContainsRune(err.Message, '\uFFFD') {
+			t.Errorf("message is not valid truncated text: %q", err.Message[:10])
 		}
 	})
 }

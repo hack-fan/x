@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 
 	"go.uber.org/zap/zapcore"
 )
@@ -40,16 +39,11 @@ func (s WeworkSender) SendRobotMsg(key, content string) error {
 	if err != nil {
 		return fmt.Errorf("send wework msg failed: %w", err)
 	}
-	body := bytes.NewReader(msg)
-	req, err := http.NewRequest("POST", s.BaseURL+key, body)
-	if err != nil {
-		return fmt.Errorf("send wework msg failed: %w", err)
-	}
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := httpc.Do(req)
+	resp, err := httpc.Post(s.BaseURL+key, "application/json", bytes.NewReader(msg))
 	if err != nil {
 		return fmt.Errorf("wechat work send robot message api error: %w", err)
 	}
+	defer func() { _ = resp.Body.Close() }()
 	if resp.StatusCode >= 400 {
 		return fmt.Errorf("wechat work send robot message api error: %s", resp.Status)
 	}

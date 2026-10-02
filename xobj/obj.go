@@ -12,7 +12,8 @@ const (
 	ProviderCOS = "cos"
 )
 
-var ErrorMissingKey = xerr.Newf(400, "MissingKey", "key is required")
+// ErrorMissingKey is returned when an empty key is passed to the client.
+var ErrorMissingKey = xerr.New(400, "MissingKey", "key is required")
 
 // Config you can choose a provider and omit others
 type Config struct {
