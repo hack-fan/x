@@ -1,3 +1,5 @@
+set -e
+
 lint() {
     (
         cd $1 || exit 1
